@@ -21,7 +21,7 @@ room_graph=literal_eval(open(map_file, "r").read())
 world.load_graph(room_graph)
 
 # Print an ASCII map
-world.print_rooms()
+# world.print_rooms()
 
 player = Player(world.starting_room)
 
@@ -29,7 +29,11 @@ player = Player(world.starting_room)
 # traversal_path = ['n', 'n']
 traversal_path = []
 
+simple_graph = {}
+for room in room_graph:
+    simple_graph[room] = list(room_graph[room][1].values())
 
+print(simple_graph)
 
 # TRAVERSAL TEST - DO NOT MODIFY
 visited_rooms = set()
@@ -51,12 +55,12 @@ else:
 #######
 # UNCOMMENT TO WALK AROUND
 #######
-player.current_room.print_room_description(player)
-while True:
-    cmds = input("-> ").lower().split(" ")
-    if cmds[0] in ["n", "s", "e", "w"]:
-        player.travel(cmds[0], True)
-    elif cmds[0] == "q":
-        break
-    else:
-        print("I did not understand that command.")
+# player.current_room.print_room_description(player)
+# while True:
+#     cmds = input("-> ").lower().split(" ")
+#     if cmds[0] in ["n", "s", "e", "w"]:
+#         player.travel(cmds[0], True)
+#     elif cmds[0] == "q":
+#         break
+#     else:
+#         print("I did not understand that command.")
