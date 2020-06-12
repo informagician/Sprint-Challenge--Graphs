@@ -11,10 +11,10 @@ world = World()
 
 # You may uncomment the smaller graphs for development and testing purposes.
 # map_file = "maps/test_line.txt"
-map_file = "maps/test_cross.txt"
+# map_file = "maps/test_cross.txt"
 # map_file = "maps/test_loop.txt"
 # map_file = "maps/test_loop_fork.txt"
-# map_file = "maps/main_maze.txt"
+map_file = "maps/main_maze.txt"
 
 # Loads the map into a dictionary
 room_graph=literal_eval(open(map_file, "r").read())
@@ -64,13 +64,19 @@ while len(stack) > 0:
                     if next_node not in visited:
                         stack.append(next_node)
         else:
-            if counter[node] == 1 and len(g[node]) == 1:
+            if counter[node] == 1: # leaf node
                 counter[node] -= 1
                 visited.add(node)
-                traversal_path.append(g[node][prev[-1]])
-                stack.append(prev[-1])
-                prev.pop()
-                prev.append(node)
+                traversal_path.append(g[prev[-1]][node])
+                if len(g[node]) == 1:
+                    p = prev.pop()
+                    stack.append(p)
+                    prev.append(node)
+                else:
+                    prev.pop()
+                    stack.append(prev[-1])
+                    prev.append(node)
+
             elif counter[node] > 1:
                 counter[node] -= 1
                 traversal_path.append(g[prev[-1]][node])
