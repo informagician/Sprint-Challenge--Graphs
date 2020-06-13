@@ -12,9 +12,9 @@ world = World()
 # You may uncomment the smaller graphs for development and testing purposes.
 # map_file = "maps/test_line.txt"
 # map_file = "maps/test_cross.txt"
-map_file = "maps/test_loop.txt"
+# map_file = "maps/test_loop.txt"
 # map_file = "maps/test_loop_fork.txt"
-# map_file = "maps/main_maze.txt"
+map_file = "maps/main_maze.txt"
 
 # Loads the map into a dictionary
 room_graph=literal_eval(open(map_file, "r").read())
@@ -29,113 +29,186 @@ player = Player(world.starting_room)
 # traversal_path = ['n', 'n']
 traversal_path = []
 
+# backtrack ref
+switch = {'n':'s','s':'n','e':'w','w':'e'}
 
-g = {}
-counter = {} # num of possible visits
+backtrack = []
 
-for room in room_graph:
-    g[room] = {v:k for k,v in room_graph[room][1].items()}
-    counter[room] = len(g[room])
+visited = {}
 
-print(g)
-print(counter)
+unexplored = {}
 
-stack = []
-stack.append(0)
-visited = set()
+while len(visited) < len(room_graph):
 
-prev = []
+    room = player.current_room.id
 
-while len(stack) > 0:
-    node = stack.pop()
+    if len(visited) == 0 or room not in visited:
+        visited[room] = player.current_room.get_exits()
+        unexplored[room] = player.current_room.get_exits()
 
-    if node not in visited:
-        if len(prev) == 0: # for starting room
-            prev.append(node)
-            if counter[node] == 1:
-                counter[node] -= 1
-                visited.add(node)
-                for next_node in g[node]:
-                    if next_node not in visited:
-                        stack.append(next_node)
-            elif counter[node] > 1:
-                counter[node] -= 1
-                for next_node in g[node]:
-                    if next_node not in visited:
-                        stack.append(next_node)
-        else:
-            if counter[node] == 1: # leaf node
-                counter[node] -= 1
-                visited.add(node)
-                traversal_path.append(g[prev[-1]][node])
-                if len(g[node]) == 1:
-                    p = prev.pop()
-                    stack.append(p)
-                    prev.append(node)
-                else:
-                    prev.pop()
-                    stack.append(prev[-1])
-                    prev.append(node)
+    while len(unexplored[player.current_room.id]) < 1:
+        back = backtrack.pop()
+        traversal_path.append(back)
+        player.travel(back)
 
-            elif counter[node] > 1:
-                counter[node] -= 1
-                traversal_path.append(g[prev[-1]][node])
-                for next_node in g[node]:
-                    if next_node != prev[-1] and next_node not in visited:
-                        stack.append(next_node)
-                prev.append(node)
-                if prev.count(prev[-1]) > 1:
-                    p = prev[-1]
-                    i = prev.index(p)
-                    loop_items = prev[i+1:-1]
-                    for item in loop_items:
-                        visited.add(item)
-                        counter[item] = 0
-print(traversal_path)
+    move = unexplored[player.current_room.id].pop()
+    traversal_path.append(move)
+    backtrack.append(switch[move])
+    player.travel(move)    
+
+
+
+
+
+
+# g = {}
+# for room in room_graph:
+#     g[room] = {k:v for k,v in room_graph[room][1].items()}
+
+# print(g)
+
+# stack = []
+# back = []
+# stack.append([player.current_room.id])
+# visited = set()
+
+# switch = {'n':'s','s':'n','e':'w','w':'e'}
+
+# while len(stack) > 0:
+#     path = stack.pop()
+#     room = path[-1]
+
+#     if room not in visited:
+#         visited.add(room)
+
+#         for exit in g[room].keys():
+
+#             if g[room][exit] not in visited:
+#                 new_path = list(path)
+#                 traversal_path.append(exit)
+#                 back.append(switch[exit])
+#                 new_path.append(g[room][exit])
+#                 stack.append(new_path)
+# # print(visited)
+# # print(path)
+# print(back)
+
+# g = {}
+# counter = {} # num of possible visits
+
+# for room in room_graph:
+#     g[room] = {v:k for k,v in room_graph[room][1].items()}
+#     counter[room] = len(g[room])
+
+# print(g)
+# # print(counter)
+
+# stack = []
+# stack.append(0)
+# visited = set()
+
+# prev = []
+
+# while len(stack) > 0:
+
+#     print('stack',stack)
+#     node = stack.pop()
+#     print('stack popped', stack)
+#     print('prev',prev)
 
 #     if node not in visited:
-#         if len(prev) == 0:
+#         if len(prev) == 0: # for starting room
 #             prev.append(node)
-#             if node not in counter and len(g[node]) == 1:
-#                 counter[node] = 1
+#             if counter[node] == 1:
+#                 counter[node] -= 1
 #                 visited.add(node)
 #                 for next_node in g[node]:
-#                     stack.append(next_node)
-#             elif node not in counter and len(g[node]) > 1:
-#                 counter[node] = 1
+#                     if next_node not in visited:
+#                         stack.append(next_node)
+#             elif counter[node] > 1:
+#                 counter[node] -= 1
 #                 for next_node in g[node]:
-#                     stack.append(next_node)
-#             elif node in counter:
-#                 counter[node] += 1
+#                     if next_node not in visited:
+#                         stack.append(next_node)
+#         else:
+#             if counter[node] == 1: # leaf node
+#                 counter[node] -= 1
+#                 visited.add(node)
+#                 traversal_path.append(g[prev[-1]][node])
+#                 if len(g[node]) == 1:
+#                     #
+#                     # if stack[-1] == prev[-1]:
+#                     #     stack.pop()
+#                     #     prev.pop()
+#                     #
+#                     p = prev.pop()
+#                     stack.append(p)
+#                     prev.append(node)
+#                 else:
+#                     while prev[-1] == node:
+#                         prev.pop()
+#                     prev.pop()
+#                     # if prev[-1] == node:
+#                     #     prev.pop()
+#                     stack.append(prev[-1])
+#                     prev.append(node)
+
+#             elif counter[node] > 1:
+#                 counter[node] -= 1
+#                 traversal_path.append(g[prev[-1]][node])
 #                 for next_node in g[node]:
-#                     stack.append(next_node)
-
-#         elif node not in counter and len(g[node]) == 1:
-#             counter[node] = 1
-#             visited.add(node)
-#             traversal_path.append(g[node][prev[-1]])
-#             stack.append(prev[-1])
-#             prev.pop()
-#         elif node not in counter and len(g[node]) > 1:
-#             counter[node] = 1
-#             traversal_path.append(g[prev[-1]][node])
-#             for next_node in g[node]:
-#                 if next_node != prev[-1]:
-#                     stack.append(next_node)
-#             prev.append(node)
-#         elif counter[node] == len(g[node]):
-            
-#             visited.add(node)
-#             stack.append(prev[-1])
-#             traversal_path.append(g[node][prev[-1]])
-#         elif counter[node] < len(g[node]):
-#             counter[node] += 1
-#             for next_node in g[node]:
-#                 if next_node != prev[-1]:
-#                     stack.append(next_node)
-
-#         prev.append(node)
+#                     if next_node != prev[-1] and next_node not in visited:
+#                         stack.append(next_node)
+#                 prev.append(node)
+#                 if prev.count(prev[-1]) > 1:
+#                     p = prev[-1]
+#                     i = prev.index(p)
+#                     loop_items = prev[i+1:-1]
+#                     prev = prev[:i+1]
+#                     for item in loop_items:
+#                         visited.add(item)
+#                         counter[item] = 0
+#                         if item in stack:
+#                             stack.pop(stack.index(item))
 # print(traversal_path)
+
+
+
+# stack = []
+
+# visited = set()
+
+# while len(visited) < len(world.rooms):
+
+#     paths = player.current_room.get_exits()
+
+#     path_list = []
+
+#     for path in paths:
+#         if player.current_room.get_room_in_direction(path) not in visited and path is not None:
+#             path_list.append(path)
+#     visited.add(player.current_room)
+
+#     if len(path_list) > 0:
+#         news = random.choice(path_list)
+#         stack.append(news)
+#         player.travel(news)
+#         traversal_path.append(news)
+#     else:
+#         last_room = stack.pop()
+
+#         def switch(x):
+#             switcher = {
+#                 'n':'s',
+#                 's':'n',
+#                 'w':'e',
+#                 'e':'w'
+#             }
+#             return switcher[x]
+
+#         player.travel(switch(last_room))
+#         traversal_path.append(last_room)
+
 
 # TRAVERSAL TEST - DO NOT MODIFY
 visited_rooms = set()
